@@ -18,8 +18,8 @@ float mWidthP : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "wi
 float mWidthM : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "width-"; >;
 float mAngleP : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "angle+"; >;
 float mAngleM : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "angle-"; >;
-float mBlackOffsetP : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "mask black offset+"; >;
-float mBlackOffsetM : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "mask black offset-"; >;
+float mBlackOffsetP : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "mask black+"; >;
+float mBlackOffsetM : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "mask black-"; >;
 float mBlackLevelP : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "black level+"; >;
 float mBlackLevelM : CONTROLOBJECT < string name = CONTROLLER_NAME; string item = "black level-"; >;
 
