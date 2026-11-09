@@ -296,7 +296,7 @@ float4 Basic_PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap
     clip( IsFace( IN.WPos ) );
 
     float4 Color = IN.Color;
-    float2 UV = IN.Tex;
+    float2 uv = IN.Tex;
 
     if ( useTexture ) {
         // テクスチャ適用
@@ -325,27 +325,27 @@ float4 Basic_PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap
     float res_x = isExistController ? max(1.0,DotX+(mWidthP-mWidthM)*DotX) : DotX;
     float2 resolution = AspectRatio * (res_x / AspectRatio.x);
 
+    // 角度補正
+    float dot_angle = isExistController ? DotAngle+(mAngleP-mAngleM)*90.0 : DotAngle;
     // radに変換
-    float dot_angle = isExistController ? DotAngle+(mAngleP-mAngleM)*DotAngle : DotAngle;
     dot_angle = dot_angle * PI / 180.0;
 
     // スクリーンの縦横比の補正
-    UV *= resolution;
+    uv *= resolution;
 
     // 座標の回転
     float s = sin(dot_angle);
     float c = cos(dot_angle);
     float2 rotated = float2(
-        UV.x * c - UV.y * s,
-        UV.x * s + UV.y * c
+        uv.x * c - uv.y * s,
+        uv.x * s + uv.y * c
     );
 
     // ドットに分割
     rotated = frac(rotated);
 
-    // ドット内の円のサイズ
-//    float circle_size = isExistController ? max(0.0,(mSizeP-mSizeM)*1.4142135) : DotSize;
-    float circle_size = isExistController ? max(0.0,DotSize+(mSizeP-mSizeM)*DotSize) : DotSize;
+    // ドット内の円のサイズ（0.0~1.4142135）
+    float circle_size = isExistController ? min(1.4142135,max(0.0,DotSize+(mSizeP-mSizeM))) : DotSize;
 
     // ドットのマスク
     float dot_mask = circle(rotated, circle_size);
@@ -509,7 +509,7 @@ float4 BufferShadow_PS(BufferShadow_OUTPUT IN, uniform bool useTexture, uniform 
 
     float4 Color = IN.Color;
     float4 ShadowColor = float4(saturate(AmbientColor), Color.a);  // 影の色
-    float2 UV = IN.Tex;
+    float2 uv = IN.Tex;
 
     if ( useTexture ) {
         // テクスチャ適用
@@ -543,33 +543,42 @@ float4 BufferShadow_PS(BufferShadow_OUTPUT IN, uniform bool useTexture, uniform 
     float res_x = isExistController ? max(1.0,DotX+(mWidthP-mWidthM)*DotX) : DotX;
     float2 resolution = AspectRatio * (res_x / AspectRatio.x);
 
+    // 角度補正
+    float dot_angle = isExistController ? DotAngle+(mAngleP-mAngleM)*90.0 : DotAngle;
     // radに変換
-    float dot_angle = isExistController ? DotAngle+(mAngleP-mAngleM)*DotAngle : DotAngle;
     dot_angle = dot_angle * PI / 180.0;
 
     // スクリーンの縦横比の補正
-    UV *= resolution;
+    uv *= resolution;
 
     // 座標の回転
     float s = sin(dot_angle);
     float c = cos(dot_angle);
     float2 rotated = float2(
-        UV.x * c - UV.y * s,
-        UV.x * s + UV.y * c
+        uv.x * c - uv.y * s,
+        uv.x * s + uv.y * c
     );
 
     // ドットに分割
     rotated = frac(rotated);
 
-    // ドット内の円のサイズ
-//    float circle_size = isExistController ? max(0.0,(mSizeP-mSizeM)*1.4142135) : DotSize;
-    float circle_size = isExistController ? max(0.0,DotSize+(mSizeP-mSizeM)*DotSize) : DotSize;
+    // ドット内の円のサイズ（0.0~1.4142135）
+    float circle_size = isExistController ? min(1.4142135,max(0.0,DotSize+(mSizeP-mSizeM))) : DotSize;
 
     // ドットのマスク
     float dot_mask = circle(rotated, circle_size);
 
-    // 黒オフセット
-    dot_mask = clamp(dot_mask, BlackOffset, 1.0);
+    // マスク黒オフセット
+//    dot_mask = clamp(dot_mask, BlackOffset, 1.0);
+    dot_mask = clamp(dot_mask, isExistController ? min(1.0,max(0.0, BlackOffset+(mBlackOffsetP-mBlackOffsetM))) : BlackOffset, 1.0);
+
+    // 表示画像の黒レベル(±1.0)
+    float b_level = isExistController ? min(1.0,max(-1.0,BlackLevel+(mBlackLevelP-mBlackLevelM))) : BlackLevel;
+    if(b_level > 0.0)
+        Color.rgb = Color.rgb * (1.0-b_level) + (float3)b_level;
+    else if(b_level < 0.0)
+        Color.rgb = Color.rgb * (-b_level+1.0) + (float3)b_level;
+    Color.rgb = saturate(Color.rgb);
 
     // マスクの適用
     Color.rgb *= dot_mask;

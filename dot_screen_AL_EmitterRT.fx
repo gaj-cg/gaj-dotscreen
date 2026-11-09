@@ -482,8 +482,9 @@ float4 Basic_PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap
     float res_x = isExistController ? max(1.0,DotX+(mWidthP-mWidthM)*DotX) : DotX;
     float2 resolution = AspectRatio * (res_x / AspectRatio.x);
 
+    // 角度補正
+    float dot_angle = isExistController ? DotAngle+(mAngleP-mAngleM)*90.0 : DotAngle;
     // radに変換
-    float dot_angle = isExistController ? DotAngle+(mAngleP-mAngleM)*DotAngle : DotAngle;
     dot_angle = dot_angle * PI / 180.0;
 
     // スクリーンの縦横比の補正
@@ -500,9 +501,8 @@ float4 Basic_PS(VS_OUTPUT IN, uniform bool useTexture, uniform bool useSphereMap
     // ドットに分割
     rotated = frac(rotated);
 
-    // ドット内の円のサイズ
-//    float circle_size = isExistController ? max(0.0,(mSizeP-mSizeM)*1.4142135) : DotSize;
-    float circle_size = isExistController ? max(0.0,DotSize+(mSizeP-mSizeM)*DotSize) : DotSize;
+    // ドット内の円のサイズ（0.0~1.4142135）
+    float circle_size = isExistController ? min(1.4142135,max(0.0,DotSize+(mSizeP-mSizeM))) : DotSize;
 
     // ドットのマスク
     float dot_mask = circle(rotated, circle_size);
